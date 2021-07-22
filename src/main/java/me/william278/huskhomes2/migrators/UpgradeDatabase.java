@@ -14,14 +14,14 @@ public class UpgradeDatabase {
     // Upgrade the database system if the config file version is not high enough
     public static void upgradeDatabase() {
         plugin.reloadConfig();
-        if (plugin.getConfig().getInt("config_file_version", 1) <= 5) {
-            plugin.getLogger().info("Detected that the database needs updating. Running database upgrade...");
+        if (plugin.getConfig().getInt("config_file_version", 1) <= 6) {
+            plugin.getLogger().info("Detected that the database might need updating. Running database upgrade...");
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                 try (PreparedStatement tableUpdateStatement = HuskHomes.getConnection().prepareStatement(
                         "ALTER TABLE " + HuskHomes.getSettings().getPlayerDataTable()
                                 + " ADD `is_ignoring_requests` boolean NOT NULL DEFAULT 0, "
-                                + "`offline_location_id` integer NULL DEFAULT NULL, "
-                                + "FOREIGN KEY (`offline_location_id`) REFERENCES " + HuskHomes.getSettings().getLocationsDataTable() + " (`location_id`) ON DELETE SET NULL ON UPDATE NO ACTION;")) {
+                                + "ADD `offline_location_id` integer NULL DEFAULT NULL, "
+                                + "ADD FOREIGN KEY (`offline_location_id`) REFERENCES " + HuskHomes.getSettings().getLocationsDataTable() + " (`location_id`) ON DELETE SET NULL ON UPDATE NO ACTION;")) {
                     tableUpdateStatement.executeUpdate();
                     plugin.getLogger().info("Database update complete!");
                 } catch (SQLException e) {
@@ -29,7 +29,7 @@ public class UpgradeDatabase {
                 } finally {
                     // Update the config file version
                     Bukkit.getScheduler().runTask(plugin, () -> {
-                        plugin.getConfig().set("config_file_version", 6);
+                        plugin.getConfig().set("config_file_version", 7);
                         plugin.saveConfig();
                     });
                 }
